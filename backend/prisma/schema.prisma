@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CREATOR
+  REVIEWER
+}
+
+enum Platform {
+  INSTAGRAM
+  FACEBOOK
+  LINKEDIN
+  X
+}
+
+enum PostStatus {
+  DRAFT
+  IN_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  role     Role
+
+  posts     Post[]
+  comments  Comment[]
+  auditLogs AuditLog[]
+  clients   Client[]  @relation("ClientReviewers")
+}
+
+model Client {
+  id        String @id @default(uuid())
+  brandName String
+
+  posts     Post[]
+  reviewers User[] @relation("ClientReviewers")
+}
+
+model Post {
+  id          String     @id @default(uuid())
+  caption     String
+  platform    Platform
+  status      PostStatus @default(DRAFT)
+  scheduledAt DateTime?
+  version     Int        @default(1)
+
+  clientId    String
+  client      Client     @relation(fields: [clientId], references: [id])
+
+  createdById String
+  createdBy   User       @relation(fields: [createdById], references: [id])
+
+  comments  Comment[]
+  auditLogs AuditLog[]
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  message String
+
+  postId   String
+  post     Post   @relation(fields: [postId], references: [id])
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  fromStatus PostStatus?
+  toStatus   PostStatus
+
+  postId  String
+  post    Post   @relation(fields: [postId], references: [id])
+
+  actorId String
+  actor   User   @relation(fields: [actorId], references: [id])
+}
