@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from '../auth/auth.service.js';
 import { AuthController } from '../auth/auth.controller.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
+import { JwtStrategy } from './jwt.strategy.js';
 let AuthModule = class AuthModule {
 };
 AuthModule = __decorate([
@@ -21,7 +22,7 @@ AuthModule = __decorate([
             }),
         ],
         controllers: [AuthController],
-        providers: [AuthService],
+        providers: [AuthService, JwtStrategy],
         exports: [AuthService],
     })
 ], AuthModule);
